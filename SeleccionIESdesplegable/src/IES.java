@@ -3,28 +3,22 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
 import javax.swing.JButton;
 
 import java.sql.*;
-import java.util.ArrayList;
+
 import javax.swing.JComboBox;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 
 public class IES extends JFrame {
 
 	private JPanel contentPane;
 	private Connection conection;
-	private JComboBox listaInstitutos;
+	private JComboBox<String> listaInstitutos;
 	private JButton btnAñadirIES;
 	
 	public static String institutoSeleccionado;
@@ -103,7 +97,7 @@ public class IES extends JFrame {
 		btnAñadirIES.setBounds(105, 143, 126, 23);
 		contentPane.add(btnAñadirIES);
 		
-		listaInstitutos = new JComboBox();
+		listaInstitutos = new JComboBox<String>();
 		listaInstitutos.setBounds(33, 91, 247, 29);
 		contentPane.add(listaInstitutos);
 		
@@ -130,6 +124,46 @@ public class IES extends JFrame {
 		contentPane.add(btnSalir);
 		
 		btnBorrar = new JButton("Borrar");
+		btnBorrar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try{
+					Class.forName("com.mysql.jdbc.Driver");
+					conection = DriverManager.getConnection("jdbc:mysql://localhost/proyecto1", "root", "");
+					
+					try {
+						String delete = "delete from ies where descripcion='" + listaInstitutos.getSelectedItem() +"'";
+						Statement consulta = conection.createStatement();
+						int filasAfectadas = consulta.executeUpdate(delete);
+
+						if(filasAfectadas >= 1){
+							JOptionPane.showMessageDialog(contentPane, "Se ha eliminado correctamente.");
+						
+						
+							listaInstitutos.removeAllItems();
+							String select = "SELECT descripcion FROM IES";
+							Statement consulta5 = conection.createStatement();
+							ResultSet resultado = consulta5.executeQuery(select);
+	
+							while(resultado.next()){
+								listaInstitutos.addItem(resultado.getString("descripcion"));
+							}
+						}
+						
+					} catch (SQLException e1) {
+						JOptionPane.showMessageDialog(contentPane, e1.getMessage());
+					}
+				}
+				catch(ClassNotFoundException e1){
+					JOptionPane.showMessageDialog(contentPane, e1.getMessage());
+				}
+				catch(SQLException e1){
+					JOptionPane.showMessageDialog(contentPane, e1.getMessage());
+				}
+				catch(Exception e1){
+					JOptionPane.showMessageDialog(contentPane, e1.getMessage());
+				}
+			}
+		});
 		btnBorrar.setBounds(306, 94, 118, 23);
 		contentPane.add(btnBorrar);
 		
@@ -163,7 +197,7 @@ public class IES extends JFrame {
 		return institutoSeleccionado;
 	}
 
-	public JComboBox getComboBox() {
+	public JComboBox<String> getComboBox() {
 		return listaInstitutos;
 	}
 	public JButton getBtnNewButton() {

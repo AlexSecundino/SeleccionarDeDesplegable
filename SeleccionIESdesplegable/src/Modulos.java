@@ -1,4 +1,3 @@
-import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.sql.*;
 
@@ -17,7 +16,7 @@ public class Modulos extends JFrame {
 
 	private JPanel contentPane;
 	private Connection conection;
-	private JComboBox listaModulos;
+	private JComboBox<String> listaModulos;
 	private JButton btnAnadirModulo;
 	private JButton btnVerTemario;
 	private JButton btnCrearSesion;
@@ -26,35 +25,19 @@ public class Modulos extends JFrame {
 	private JButton btnBorrar;
 
 	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Modulos frame = new Modulos();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
-	/**
 	 * Create the frame.
 	 */
 	public Modulos() {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 500, 227);
+		setBounds(100, 100, 500, 275);
 		setTitle(IES.institutoSeleccionado);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		listaModulos = new JComboBox();
-		listaModulos.setBounds(37, 46, 235, 20);
+		listaModulos = new JComboBox<String>();
+		listaModulos.setBounds(8, 46, 235, 20);
 		contentPane.add(listaModulos);
 		
 		btnAnadirModulo = new JButton("A\u00F1adir Modulo");
@@ -116,19 +99,19 @@ public class Modulos extends JFrame {
 					}
 			}
 		});
-		btnAnadirModulo.setBounds(308, 11, 140, 23);
+		btnAnadirModulo.setBounds(262, 11, 186, 23);
 		contentPane.add(btnAnadirModulo);
 		
 		btnVerSesiones = new JButton("Ver Sesiones");
-		btnVerSesiones.setBounds(160, 110, 140, 23);
+		btnVerSesiones.setBounds(51, 147, 140, 23);
 		contentPane.add(btnVerSesiones);
 		
 		btnVerTemario = new JButton("Ver Temario");
-		btnVerTemario.setBounds(308, 79, 140, 23);
+		btnVerTemario.setBounds(262, 113, 186, 23);
 		contentPane.add(btnVerTemario);
 		
 		btnCrearSesion = new JButton("Crear Sesion");
-		btnCrearSesion.setBounds(10, 110, 140, 23);
+		btnCrearSesion.setBounds(51, 113, 140, 23);
 		contentPane.add(btnCrearSesion);
 		
 		btnCerrar = new JButton("Cerrar");
@@ -137,12 +120,57 @@ public class Modulos extends JFrame {
 				dispose();
 			}
 		});
-		btnCerrar.setBounds(308, 110, 140, 23);
+		btnCerrar.setBounds(262, 147, 186, 23);
 		contentPane.add(btnCerrar);
 		
 		btnBorrar = new JButton("Borrar M\u00F3dulo");
-		btnBorrar.setBounds(308, 45, 140, 23);
+		btnBorrar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try{
+					Class.forName("com.mysql.jdbc.Driver");
+					conection = DriverManager.getConnection("jdbc:mysql://localhost/proyecto1", "root", "");
+					
+					try {
+						String delete = "delete from modulo where descripcion='" + listaModulos.getSelectedItem() +"'";
+						Statement consulta = conection.createStatement();
+						int filasAfectadas = consulta.executeUpdate(delete);
+
+						if(filasAfectadas >= 1){
+							JOptionPane.showMessageDialog(contentPane, "Se ha eliminado correctamente.");
+						
+						
+							listaModulos.removeAllItems();
+							String select = "select m.descripcion from modulo m INNER JOIN asignaturasdelies adi on m.codigoModulo = adi.codigoModulo INNER JOIN ies i on i.codigoIES = adi.codigoIES where i.descripcion ='"+IES.institutoSeleccionado+"'";
+							Statement consulta5 = conection.createStatement();
+							ResultSet resultado = consulta5.executeQuery(select);
+	
+							while(resultado.next()){
+								listaModulos.addItem(resultado.getString("descripcion"));
+							}
+						}
+						
+					} catch (SQLException e1) {
+						JOptionPane.showMessageDialog(contentPane, e1.getMessage());
+					}
+				}
+				catch(ClassNotFoundException e1){
+					JOptionPane.showMessageDialog(contentPane, e1.getMessage());
+				}
+				catch(SQLException e1){
+					JOptionPane.showMessageDialog(contentPane, e1.getMessage());
+				}
+				catch(Exception e1){
+					JOptionPane.showMessageDialog(contentPane, e1.getMessage());
+				}
+			}
+		});
+		btnBorrar.setBounds(262, 45, 186, 23);
 		contentPane.add(btnBorrar);
+		
+		JButton btnBorrarDelIES = new JButton("Borrar Modulo "
+				+ "del instituto");
+		btnBorrarDelIES.setBounds(262, 79, 186, 23);
+		contentPane.add(btnBorrarDelIES);
 		
 		try{
 			Class.forName("com.mysql.jdbc.Driver");
