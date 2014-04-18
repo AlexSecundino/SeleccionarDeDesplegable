@@ -22,12 +22,11 @@ import java.awt.event.MouseEvent;
 
 public class IES extends JFrame {
 
-	private static final Object[] String = null;
 	private JPanel contentPane;
 	private Connection conection;
-	private JComboBox comboBox;
-	private JButton btnNewButton;
-
+	private JComboBox listaInstitutos;
+	private JButton btnAñadirIES;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -56,8 +55,8 @@ public class IES extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		btnNewButton = new JButton("A\u00F1adir IES");
-		btnNewButton.addActionListener(new ActionListener() {
+		btnAñadirIES = new JButton("A\u00F1adir IES");
+		btnAñadirIES.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				String nombreInstituto = "";
 				nombreInstituto = JOptionPane.showInputDialog(contentPane, "Introduzca el nombre del instituto", "Nuevo instituto", 3);
@@ -72,13 +71,13 @@ public class IES extends JFrame {
 								String insertar = "INSERT INTO ies(descripcion) values('" + nombreInstituto + "')";
 								Statement consulta = conection.createStatement();
 								consulta.execute(insertar);
-								comboBox.removeAllItems();
+								listaInstitutos.removeAllItems();
 								String select = "SELECT descripcion FROM IES";
 								Statement consulta2 = conection.createStatement();
 								ResultSet resultado = consulta2.executeQuery(select);
 
 								while(resultado.next()){
-									comboBox.addItem(resultado.getString("descripcion"));
+									listaInstitutos.addItem(resultado.getString("descripcion"));
 								}
 							} catch (SQLException e1) {
 								JOptionPane.showMessageDialog(contentPane, e1.getMessage());
@@ -96,12 +95,54 @@ public class IES extends JFrame {
 					}
 			}
 		});
-		btnNewButton.setBounds(147, 190, 126, 23);
-		contentPane.add(btnNewButton);
+		btnAñadirIES.setBounds(298, 228, 126, 23);
+		contentPane.add(btnAñadirIES);
 		
-		comboBox = new JComboBox();
-		comboBox.setBounds(75, 58, 247, 29);
-		contentPane.add(comboBox);
+		listaInstitutos = new JComboBox();
+		listaInstitutos.setBounds(31, 148, 247, 29);
+		contentPane.add(listaInstitutos);
+		
+		JButton btnAceptar = new JButton("Aceptar");
+		btnAceptar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if(listaInstitutos.getSelectedIndex() >= 0){
+					String institutoSelecionado = listaInstitutos.getSelectedItem().toString();
+					
+					try{
+						Class.forName("com.mysql.jdbc.Driver");
+						conection = DriverManager.getConnection("jdbc:mysql://localhost/proyecto1", "root", "");
+						
+						try {
+							String select = "select count(*) from asignaturasdelies where codigoIES = (select codigoIES from ies where descripcion = '" + institutoSelecionado + "')";
+							Statement consulta = conection.createStatement();
+							ResultSet resultado = consulta.executeQuery(select);
+							
+							if(resultado.next())
+							{
+								Modulos modulos = new Modulos();
+								modulos.setVisible(true);
+							}
+							
+						} catch (SQLException e1) {
+							JOptionPane.showMessageDialog(contentPane, e1.getMessage());
+						}
+					}
+					catch(ClassNotFoundException e1){
+						JOptionPane.showMessageDialog(contentPane, e1.getMessage());
+					}
+					catch(SQLException e1){
+						JOptionPane.showMessageDialog(contentPane, e1.getMessage());
+					}
+					catch(Exception e1){
+						JOptionPane.showMessageDialog(contentPane, e1.getMessage());
+					}
+				}
+				else
+					return;
+			}
+		});
+		btnAceptar.setBounds(317, 151, 89, 23);
+		contentPane.add(btnAceptar);
 		
 		try{
 			Class.forName("com.mysql.jdbc.Driver");
@@ -113,7 +154,7 @@ public class IES extends JFrame {
 				ResultSet resultado = consulta.executeQuery(consulta2);
 
 				while(resultado.next()){
-					comboBox.addItem(resultado.getString("descripcion"));
+					listaInstitutos.addItem(resultado.getString("descripcion"));
 				}
 				
 				
@@ -132,10 +173,10 @@ public class IES extends JFrame {
 		}
 	}
 	public JComboBox getComboBox() {
-		return comboBox;
+		return listaInstitutos;
 	}
 	public JButton getBtnNewButton() {
-		return btnNewButton;
+		return btnAñadirIES;
 	}
 	public JPanel getContentPane() {
 		return contentPane;
